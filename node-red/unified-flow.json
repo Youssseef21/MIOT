@@ -836,8 +836,8 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Send Voice Command",
-        "func": "const command = msg.command;\nconst intent = msg.intent;\n\n// Map to IR codes or MQTT commands\nconst irCodes = {\n    'led1_toggle': '0x00FF30CF',\n    'led2_toggle': '0x00FF18E7',\n    'servo_180': '0x00FF02FD',\n    'servo_0': '0x00FF22DD'\n};\n\nlet mqttMsg = null;\nlet httpResponse = { ok: true, command, intent };\n\nif (irCodes[command]) {\n    // Send IR command\n    mqttMsg = {\n        topic: 'miot/ir/code',\n        payload: irCodes[command]\n    };\n    httpResponse.type = 'ir';\n} else if (command.startsWith('auto_mode_')) {\n    // Send MQTT auto_mode command\n    const action = command === 'auto_mode_on' ? 'ON' : 'OFF';\n    mqttMsg = {\n        topic: 'push/auto_mode',\n        payload: action\n    };\n    httpResponse.type = 'auto_mode';\n}\n\nreturn [mqttMsg, { payload: httpResponse, statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*' } }];",
-        "outputs": 2,
+        "func": "const command = msg.command;\nconst intent = msg.intent;\nconst text = msg.payload?.text || '';\nconst timestamp = (new Date()).toISOString();\n\n// Map to IR codes or MQTT commands\nconst irCodes = {\n    'led1_toggle': '0x00FF30CF',\n    'led2_toggle': '0x00FF18E7',\n    'servo_180': '0x00FF02FD',\n    'servo_0': '0x00FF22DD'\n};\n\nlet mqttMsg = null;\nlet httpResponse = { ok: true, command, intent };\nlet logMsg = null;\n\nif (irCodes[command]) {\n    // Send IR command\n    mqttMsg = {\n        topic: 'miot/ir/code',\n        payload: irCodes[command]\n    };\n    httpResponse.type = 'ir';\n} else if (command.startsWith('auto_mode_')) {\n    // Send MQTT auto_mode command\n    const action = command === 'auto_mode_on' ? 'ON' : 'OFF';\n    mqttMsg = {\n        topic: 'push/auto_mode',\n        payload: action\n    };\n    httpResponse.type = 'auto_mode';\n}\n\n// Log voice command to Firestore\nlogMsg = {\n    payload: {\n        fields: {\n            timestamp: { timestampValue: timestamp },\n            type: { stringValue: 'Voice Command' },\n            text: { stringValue: text },\n            device: { stringValue: intent.device },\n            action: { stringValue: intent.action },\n            command: { stringValue: command }\n        }\n    }\n};\n\nreturn [mqttMsg, { payload: httpResponse, statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*' } }, logMsg];",
+        "outputs": 3,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -846,7 +846,8 @@
         "y": 1100,
         "wires": [
             ["voice_mqtt_out"],
-            ["voice_http_response"]
+            ["voice_http_response"],
+            ["2d39c08273e09b97"]
         ]
     },
     {
