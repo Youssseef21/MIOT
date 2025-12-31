@@ -2,31 +2,30 @@ import React, { useState } from 'react'
 
 export default function LedToggle({ label, device, value, onToggle, onIrToggle, disabled }) {
   const [loading, setLoading] = useState(false)
-  const [irLoading, setIrLoading] = useState(false)
   
-  async function handleRest(){
+  async function handleToggle(){
     setLoading(true)
-    try { await onToggle(value === 'ON' ? 'OFF' : 'ON') }
+    try { await onIrToggle() }
     finally { setLoading(false) }
   }
   
-  async function handleIr(){
-    setIrLoading(true)
-    try { await onIrToggle() }
-    finally { setIrLoading(false) }
-  }
+  const isOn = value === 'ON'
   
   return (
     <div className="control-row">
-      <div className="control-label">{label}</div>
-      <div className="button-group">
-        <button className={`btn ${value==='ON'?'on':'off'}`} onClick={handleRest} disabled={disabled||loading} title="REST API">
-          {loading ? '...' : value || 'OFF'}
-        </button>
-        <button className="btn-ir" onClick={handleIr} disabled={disabled||irLoading} title="IR Remote">
-          {irLoading ? '...' : '📡'}
-        </button>
+      <div className="control-label">
+        <span style={{ fontSize: '20px', marginRight: '8px' }}>{isOn ? '💡' : '🔆'}</span>
+        {label}
       </div>
+      <button 
+        className={`btn ${isOn ? 'on' : 'off'}`} 
+        onClick={handleToggle} 
+        disabled={disabled || loading}
+        style={{ minWidth: '120px', fontSize: '16px' }}
+        title="Toggle via IR Remote"
+      >
+        {loading ? '⏳ ...' : (isOn ? '✔️ ON' : '⭕ OFF')}
+      </button>
     </div>
   )
 }

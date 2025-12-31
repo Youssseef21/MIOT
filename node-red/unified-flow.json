@@ -2,9 +2,9 @@
     {
         "id": "8236f17f75ff22ef",
         "type": "tab",
-        "label": "MIoT REST API",
+        "label": "MIoT REST API + Firestore + Dashboard",
         "disabled": false,
-        "info": "REST API endpoints for IoT Control System"
+        "info": "Unified flow: MQTT sensors → Firestore, REST API endpoints, React UI support"
     },
     {
         "id": "02648d7fd1c3246a",
@@ -22,17 +22,52 @@
         "x": 120,
         "y": 60,
         "wires": [
-            [
-                "c6b043d94a77998e"
-            ]
+            ["c6b043d94a77998e", "temp_to_firestore"]
         ]
+    },
+    {
+        "id": "temp_to_firestore",
+        "type": "function",
+        "z": "8236f17f75ff22ef",
+        "name": "Temp History",
+        "func": "const value = parseFloat(msg.payload);\nif (isNaN(value)) return null;\nconst projectId = \"miot-2a535\";\nconst apiKey = \"AIzaSyAthtPTwsME_GWtuXELBUos_9Tnws-d5to\";\nconst collection = \"dht22_temperature\";\n\nmsg.payload = {\n    fields: {\n        type: { stringValue: \"temperature\" },\n        value: { doubleValue: value },\n        unit: { stringValue: \"°C\" },\n        timestamp: { timestampValue: new Date().toISOString() }\n    }\n};\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 10,
+        "wires": [
+            ["temp_http"]
+        ]
+    },
+    {
+        "id": "temp_http",
+        "type": "http request",
+        "z": "8236f17f75ff22ef",
+        "name": "POST Temp",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 550,
+        "y": 10,
+        "wires": [[]]
     },
     {
         "id": "c6b043d94a77998e",
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Cache Temperature",
-        "func": "const v = parseFloat(msg.payload);\nif(!isNaN(v)) {\n    global.set('temperature', v);\n    node.status({fill:'green',shape:'dot',text:v.toFixed(1)+'°C'});\n}\nreturn null;",
+        "func": "const v = parseFloat(msg.payload);\nif(!isNaN(v)) {\n    global.set('temperature', v);\n    global.set('temp_timestamp', new Date().toISOString());\n    node.status({fill:'green',shape:'dot',text:v.toFixed(1)+'°C'});\n}\nreturn null;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -40,9 +75,7 @@
         "libs": [],
         "x": 320,
         "y": 60,
-        "wires": [
-            []
-        ]
+        "wires": [[]]
     },
     {
         "id": "a75f06886999611b",
@@ -60,17 +93,52 @@
         "x": 120,
         "y": 120,
         "wires": [
-            [
-                "ada89a421e3bd5e0"
-            ]
+            ["ada89a421e3bd5e0", "hum_to_firestore"]
         ]
+    },
+    {
+        "id": "hum_to_firestore",
+        "type": "function",
+        "z": "8236f17f75ff22ef",
+        "name": "Hum History",
+        "func": "const value = parseFloat(msg.payload);\nif (isNaN(value)) return null;\nconst projectId = \"miot-2a535\";\nconst apiKey = \"AIzaSyAthtPTwsME_GWtuXELBUos_9Tnws-d5to\";\nconst collection = \"dht22_humidity\";\n\nmsg.payload = {\n    fields: {\n        type: { stringValue: \"humidity\" },\n        value: { doubleValue: value },\n        unit: { stringValue: \"%\" },\n        timestamp: { timestampValue: new Date().toISOString() }\n    }\n};\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 70,
+        "wires": [
+            ["hum_http"]
+        ]
+    },
+    {
+        "id": "hum_http",
+        "type": "http request",
+        "z": "8236f17f75ff22ef",
+        "name": "POST Hum",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 550,
+        "y": 70,
+        "wires": [[]]
     },
     {
         "id": "ada89a421e3bd5e0",
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Cache Humidity",
-        "func": "const v = parseFloat(msg.payload);\nif(!isNaN(v)) {\n    global.set('humidity', v);\n    node.status({fill:'blue',shape:'dot',text:v.toFixed(0)+'%'});\n}\nreturn null;",
+        "func": "const v = parseFloat(msg.payload);\nif(!isNaN(v)) {\n    global.set('humidity', v);\n    global.set('humidity_timestamp', new Date().toISOString());\n    node.status({fill:'blue',shape:'dot',text:v.toFixed(0)+'%'});\n}\nreturn null;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -78,9 +146,7 @@
         "libs": [],
         "x": 320,
         "y": 120,
-        "wires": [
-            []
-        ]
+        "wires": [[]]
     },
     {
         "id": "e19315ff13256810",
@@ -98,9 +164,7 @@
         "x": 120,
         "y": 180,
         "wires": [
-            [
-                "73fceefbcafd6ed7"
-            ]
+            ["73fceefbcafd6ed7"]
         ]
     },
     {
@@ -108,7 +172,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Cache Luminosity",
-        "func": "const v = parseInt(msg.payload);\nif(!isNaN(v)) {\n    global.set('luminosity', v);\n    node.status({fill:'yellow',shape:'dot',text:v+' lux'});\n}\nreturn null;",
+        "func": "const v = parseInt(msg.payload);\nif(!isNaN(v)) {\n    global.set('luminosity', v);\n    global.set('luminosity_timestamp', new Date().toISOString());\n    node.status({fill:'yellow',shape:'dot',text:v+' lux'});\n}\nreturn null;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -116,9 +180,7 @@
         "libs": [],
         "x": 320,
         "y": 180,
-        "wires": [
-            []
-        ]
+        "wires": [[]]
     },
     {
         "id": "93d41bdc1c275085",
@@ -136,9 +198,7 @@
         "x": 120,
         "y": 240,
         "wires": [
-            [
-                "d050248e65e2f9e6"
-            ]
+            ["d050248e65e2f9e6"]
         ]
     },
     {
@@ -154,9 +214,7 @@
         "libs": [],
         "x": 310,
         "y": 240,
-        "wires": [
-            []
-        ]
+        "wires": [[]]
     },
     {
         "id": "40307dacd5824809",
@@ -174,9 +232,7 @@
         "x": 120,
         "y": 300,
         "wires": [
-            [
-                "3029c428882d470c"
-            ]
+            ["3029c428882d470c"]
         ]
     },
     {
@@ -192,9 +248,7 @@
         "libs": [],
         "x": 310,
         "y": 300,
-        "wires": [
-            []
-        ]
+        "wires": [[]]
     },
     {
         "id": "a28660aec4ed2e79",
@@ -212,9 +266,7 @@
         "x": 120,
         "y": 360,
         "wires": [
-            [
-                "a055b8576dc38b87"
-            ]
+            ["a055b8576dc38b87"]
         ]
     },
     {
@@ -230,9 +282,7 @@
         "libs": [],
         "x": 310,
         "y": 360,
-        "wires": [
-            []
-        ]
+        "wires": [[]]
     },
     {
         "id": "ac913f9f45c6df54",
@@ -246,9 +296,7 @@
         "x": 130,
         "y": 480,
         "wires": [
-            [
-                "a818e7537a62ef6a"
-            ]
+            ["a818e7537a62ef6a"]
         ]
     },
     {
@@ -256,7 +304,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Build Sensor Response",
-        "func": "const temperature = global.get('temperature') || null;\nconst humidity = global.get('humidity') || null;\nconst luminosity = global.get('luminosity') || null;\n\nmsg.payload = {\n    temperature,\n    humidity,\n    luminosity\n};\n\nmsg.headers = {\n    'Content-Type': 'application/json',\n    'Access-Control-Allow-Origin': '*'\n};\n\nreturn msg;",
+        "func": "const temperature = global.get('temperature') || null;\nconst humidity = global.get('humidity') || null;\nconst luminosity = global.get('luminosity') || null;\n\nmsg.payload = {\n    temperature,\n    humidity,\n    luminosity,\n    timestamp: new Date().toISOString()\n};\n\nmsg.headers = {\n    'Content-Type': 'application/json',\n    'Access-Control-Allow-Origin': '*'\n};\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -265,9 +313,7 @@
         "x": 370,
         "y": 480,
         "wires": [
-            [
-                "d385fac247b105c3"
-            ]
+            ["d385fac247b105c3"]
         ]
     },
     {
@@ -293,9 +339,7 @@
         "x": 130,
         "y": 560,
         "wires": [
-            [
-                "b3706134483fb8be"
-            ]
+            ["b3706134483fb8be"]
         ]
     },
     {
@@ -312,9 +356,7 @@
         "x": 370,
         "y": 560,
         "wires": [
-            [
-                "4ed9e443a681d1ad"
-            ]
+            ["4ed9e443a681d1ad"]
         ]
     },
     {
@@ -340,9 +382,7 @@
         "x": 130,
         "y": 660,
         "wires": [
-            [
-                "da1aa5ed5847087b"
-            ]
+            ["da1aa5ed5847087b"]
         ]
     },
     {
@@ -350,7 +390,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Validate & Route",
-        "func": "const body = msg.payload || {};\n\nif(!body.device || typeof body.action === 'undefined'){\n    msg.statusCode = 400;\n    msg.payload = { error: 'Missing device or action' };\n    msg.headers = {'Access-Control-Allow-Origin': '*'};\n    return [null, msg, null];\n}\n\nconst device = body.device;\nconst action = body.action;\nlet topic = '';\nlet mqttPayload = null;\n\nif(device === 'led1') {\n    topic = 'push/led1';\n    mqttPayload = String(action);\n} else if(device === 'led2') {\n    topic = 'push/led2';\n    mqttPayload = String(action);\n} else if(device === 'servo') {\n    topic = 'miot/ir/servo';\n    mqttPayload = Number(action);\n} else {\n    msg.statusCode = 400;\n    msg.payload = { error: 'Unknown device: ' + device };\n    msg.headers = {'Access-Control-Allow-Origin': '*'};\n    return [null, msg, null];\n}\n\nconst timestamp = (new Date()).toISOString();\n\n// Prepare MQTT message\nconst mqttMsg = {\n    topic: topic,\n    payload: mqttPayload\n};\n\n// Prepare HTTP response\nconst httpMsg = {\n    payload: {\n        ok: true,\n        device: device,\n        action: action,\n        timestamp: timestamp\n    },\n    headers: {'Access-Control-Allow-Origin': '*'},\n    statusCode: 200\n};\n\n// Prepare Firebase log\nconst logMsg = {\n    payload: {\n        fields: {\n            timestamp: { timestampValue: timestamp },\n            device: { stringValue: device },\n            action: { stringValue: String(action) },\n            source: { stringValue: 'Dashboard' }\n        }\n    }\n};\n\nnode.status({fill:'green',shape:'dot',text:`${device}:${action}`});\n\nreturn [mqttMsg, httpMsg, logMsg];",
+        "func": "const body = msg.payload || {};\n\nif(!body.device || typeof body.action === 'undefined'){\n    msg.statusCode = 400;\n    msg.payload = { error: 'Missing device or action' };\n    msg.headers = {'Access-Control-Allow-Origin': '*'};\n    return [null, msg, null];\n}\n\nconst device = body.device;\nconst action = body.action;\nlet topic = '';\nlet mqttPayload = null;\n\nif(device === 'led1') {\n    topic = 'push/led1';\n    mqttPayload = String(action);\n} else if(device === 'led2') {\n    topic = 'push/led2';\n    mqttPayload = String(action);\n} else if(device === 'servo') {\n    topic = 'miot/ir/servo';\n    mqttPayload = Number(action);\n} else {\n    msg.statusCode = 400;\n    msg.payload = { error: 'Unknown device: ' + device };\n    msg.headers = {'Access-Control-Allow-Origin': '*'};\n    return [null, msg, null];\n}\n\nconst timestamp = (new Date()).toISOString();\n\n// Prepare MQTT message\nconst mqttMsg = {\n    topic: topic,\n    payload: mqttPayload\n};\n\n// Prepare HTTP response\nconst httpMsg = {\n    payload: {\n        ok: true,\n        device: device,\n        action: action,\n        timestamp: timestamp\n    },\n    headers: {'Access-Control-Allow-Origin': '*'},\n    statusCode: 200\n};\n\n// Only log servo to Firestore (LEDs toggle only via IR)\nlet logMsg = null;\nif(device === 'servo') {\n    logMsg = {\n        payload: {\n            fields: {\n                timestamp: { timestampValue: timestamp },\n                type: { stringValue: 'Servo' },\n                value: { stringValue: String(action) }\n            }\n        }\n    };\n}\n\nnode.status({fill:'green',shape:'dot',text:`${device}:${action}`});\n\nreturn [mqttMsg, httpMsg, logMsg];",
         "outputs": 3,
         "timeout": "",
         "noerr": 0,
@@ -361,13 +401,8 @@
         "y": 660,
         "wires": [
             [],
-            [
-                "abaf1460cf5d826e"
-            ],
-            [
-                "2d39c08273e09b97",
-                "f8a9c1d2e3b4a5c6"
-            ]
+            ["abaf1460cf5d826e"],
+            ["2d39c08273e09b97"]
         ]
     },
     {
@@ -385,8 +420,8 @@
         "id": "2d39c08273e09b97",
         "type": "function",
         "z": "8236f17f75ff22ef",
-        "name": "Save to Firestore",
-        "func": "// Try global injection first, then fallback to require (needs functionExternalModules enabled)\nlet admin = global.get('firebaseAdmin');\nlet serviceAccount = global.get('firebaseServiceAccount');\nlet app = global.get('firebaseApp');\n\nif (!admin && typeof require === 'function') {\n    try {\n        admin = require('firebase-admin');\n        if (!serviceAccount) {\n            serviceAccount = require('C:/Users/Youssefh/dnje-40900-firebase-adminsdk-fbsvc-2401d4a4be.json');\n        }\n        global.set('firebaseAdmin', admin);\n        global.set('firebaseServiceAccount', serviceAccount);\n    } catch (err) {\n        node.error('Firebase require failed: ' + err.message);\n    }\n}\n\n// Prepare entry from upstream log payload\nconst entry = {\n    timestamp: msg.payload?.fields?.timestamp?.timestampValue,\n    device: msg.payload?.fields?.device?.stringValue,\n    action: msg.payload?.fields?.action?.stringValue,\n    source: msg.payload?.fields?.source?.stringValue\n};\n\n// Keep a short in-memory ring buffer as a safety net\nlet history = global.get('history') || [];\nhistory.unshift(entry);\nhistory = history.slice(0, 50);\nglobal.set('history', history);\n\nif (!admin) {\n    node.status({fill:'yellow',shape:'dot',text:'Memory only (firebaseAdmin missing)'});\n    return null;\n}\n\ntry {\n    // Initialize app once using globals or require fallback\n    if (!app) {\n        if (admin.apps && admin.apps.length) {\n            app = admin.apps[0];\n        } else if (serviceAccount) {\n            app = admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });\n        } else {\n            throw new Error('service account not found');\n        }\n        global.set('firebaseApp', app);\n        node.status({fill:'green',shape:'ring',text:'Firebase ready'});\n    }\n\n    const db = admin.firestore();\n    db.collection('history').add(entry)\n        .then(() => node.status({fill:'green',shape:'dot',text:'Saved to Firebase'}))\n        .catch(err => {\n            node.error('Firestore write error: ' + err.message);\n            node.status({fill:'yellow',shape:'dot',text:'Memory only'});\n        });\n} catch (err) {\n    node.error('Firebase init/write failed: ' + err.message);\n    node.status({fill:'red',shape:'ring',text:'Memory only'});\n}\n\nreturn null;",
+        "name": "Control History",
+        "func": "// Only process if logMsg has fields (servo from /api/control or LED/Servo from /api/ir)\nif (!msg.payload?.fields) return null;\n\nconst projectId = \"miot-2a535\";\nconst apiKey = \"AIzaSyAthtPTwsME_GWtuXELBUos_9Tnws-d5to\";\nconst collection = \"dht22_states\";\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -395,9 +430,29 @@
         "x": 600,
         "y": 700,
         "wires": [
-            [
-                "c5a53062698399d7"
-            ]
+            ["control_http"]
+        ]
+    },
+    {
+        "id": "control_http",
+        "type": "http request",
+        "z": "8236f17f75ff22ef",
+        "name": "POST Control to Firestore",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 850,
+        "y": 700,
+        "wires": [
+            ["c5a53062698399d7"]
         ]
     },
     {
@@ -429,17 +484,15 @@
         "x": 130,
         "y": 780,
         "wires": [
-            [
-                "7bbcd8c435f5f886"
-            ]
+            ["7bbcd8c435f5f886"]
         ]
     },
     {
         "id": "7bbcd8c435f5f886",
         "type": "function",
         "z": "8236f17f75ff22ef",
-        "name": "Get History from Firestore",
-        "func": "const admin = global.get('firebaseAdmin');\n\n// If Firebase is configured, read from Firestore\nif (admin) {\n    const db = admin.firestore();\n    \n    db.collection('history')\n        .orderBy('timestamp', 'desc')\n        .limit(20)\n        .get()\n        .then(snapshot => {\n            const data = snapshot.docs.map(doc => doc.data());\n            \n            msg.payload = data;\n            msg.headers = {\n                'Content-Type': 'application/json',\n                'Access-Control-Allow-Origin': '*'\n            };\n            msg.statusCode = 200;\n            \n            node.send(msg);\n            node.status({fill:'green',shape:'dot',text:data.length + ' records'});\n        })\n        .catch(err => {\n            node.error('Firestore read error: ' + err.message);\n            \n            // Fallback to memory\n            let history = global.get('history') || [];\n            msg.payload = history.slice(0, 20);\n            msg.headers = {\n                'Content-Type': 'application/json',\n                'Access-Control-Allow-Origin': '*'\n            };\n            msg.statusCode = 200;\n            \n            node.send(msg);\n            node.status({fill:'yellow',shape:'dot',text:'Memory fallback'});\n        });\n    \n    return null; // Async - we call node.send() in the promise\n    \n} else {\n    // Fallback to memory if Firebase not configured\n    let history = global.get('history') || [];\n    \n    msg.payload = history.slice(0, 20);\n    msg.headers = {\n        'Content-Type': 'application/json',\n        'Access-Control-Allow-Origin': '*'\n    };\n    msg.statusCode = 200;\n    \n    node.status({fill:'yellow',shape:'ring',text:'Memory only'});\n    return msg;\n}",
+        "name": "Query States",
+        "func": "const projectId = \"miot-2a535\";\nconst apiKey = \"AIzaSyAthtPTwsME_GWtuXELBUos_9Tnws-d5to\";\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\nmsg.payload = { structuredQuery: { from: [{ collectionId: \"dht22_states\" }], orderBy: [{ field: { fieldPath: \"timestamp\" }, direction: \"DESCENDING\" }], limit: 20 } };\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -448,9 +501,46 @@
         "x": 370,
         "y": 780,
         "wires": [
-            [
-                "b55f811ac5789982"
-            ]
+            ["history_request"]
+        ]
+    },
+    {
+        "id": "history_request",
+        "type": "http request",
+        "z": "8236f17f75ff22ef",
+        "name": "GET States from Firestore",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 590,
+        "y": 780,
+        "wires": [
+            ["format_history"]
+        ]
+    },
+    {
+        "id": "format_history",
+        "type": "function",
+        "z": "8236f17f75ff22ef",
+        "name": "Format History Response",
+        "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nconst docs = rows.filter(r => r.document).map(r => r.document);\nconst data = docs.map(doc => ({\n    type: doc.fields?.type?.stringValue,\n    value: doc.fields?.value?.stringValue || doc.fields?.value?.doubleValue || doc.fields?.value?.integerValue,\n    timestamp: doc.fields?.timestamp?.timestampValue\n}));\n\nmsg.payload = data;\nmsg.headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };\nmsg.statusCode = 200;\n\nnode.status({fill:'green',shape:'dot',text:data.length + ' records'});\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 780,
+        "wires": [
+            ["b55f811ac5789982"]
         ]
     },
     {
@@ -476,9 +566,7 @@
         "x": 140,
         "y": 860,
         "wires": [
-            [
-                "a0ea6acfbda83499"
-            ]
+            ["a0ea6acfbda83499"]
         ]
     },
     {
@@ -495,9 +583,7 @@
         "x": 360,
         "y": 860,
         "wires": [
-            [
-                "1f7b258b2ab23ef5"
-            ]
+            ["1f7b258b2ab23ef5"]
         ]
     },
     {
@@ -523,9 +609,7 @@
         "x": 150,
         "y": 980,
         "wires": [
-            [
-                "d8759595b53636d5"
-            ]
+            ["d8759595b53636d5"]
         ]
     },
     {
@@ -533,7 +617,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Map IR Codes",
-        "func": "const body = msg.payload || {};\nconst command = body.command || '';\n\nconst irCodes = {\n    'led1_toggle': '0x00FF30CF',\n    'led2_toggle': '0x00FF18E7',\n    'servo_180': '0x00FF02FD',\n    'servo_0': '0x00FF22DD'\n};\n\nif (!irCodes[command]) {\n    msg.statusCode = 400;\n    msg.payload = { error: 'Unknown IR command', available: Object.keys(irCodes) };\n    return [null, msg, null];\n}\n\nconst irMsg = {\n    topic: 'miot/ir/code',\n    payload: irCodes[command]\n};\n\nconst timestamp = (new Date()).toISOString();\n\nconst logMsg = {\n    payload: {\n        fields: {\n            timestamp: { timestampValue: timestamp },\n            device: { stringValue: 'ir_remote' },\n            action: { stringValue: command },\n            source: { stringValue: 'IR-API' }\n        }\n    }\n};\n\nconst httpMsg = {\n    payload: {\n        ok: true,\n        command: command,\n        code: irCodes[command],\n        timestamp\n    },\n    statusCode: 200\n};\n\nnode.status({fill:'blue',shape:'dot',text:command});\nreturn [irMsg, httpMsg, logMsg];",
+        "func": "const body = msg.payload || {};\nconst command = body.command || '';\n\nconst irCodes = {\n    'led1_toggle': '0x00FF30CF',\n    'led2_toggle': '0x00FF18E7',\n    'servo_180': '0x00FF02FD',\n    'servo_0': '0x00FF22DD'\n};\n\nif (!irCodes[command]) {\n    msg.statusCode = 400;\n    msg.payload = { error: 'Unknown IR command', available: Object.keys(irCodes) };\n    return [null, msg, null];\n}\n\nconst irMsg = {\n    topic: 'miot/ir/code',\n    payload: irCodes[command]\n};\n\nconst timestamp = (new Date()).toISOString();\n\n// Map IR commands to device types for Firestore logging\nlet deviceType = '';\nlet action = '';\nif (command === 'led1_toggle') { deviceType = 'LED1'; action = 'toggle'; }\nelse if (command === 'led2_toggle') { deviceType = 'LED2'; action = 'toggle'; }\nelse if (command === 'servo_180') { deviceType = 'Servo'; action = '180'; }\nelse if (command === 'servo_0') { deviceType = 'Servo'; action = '0'; }\n\nconst logMsg = {\n    payload: {\n        fields: {\n            timestamp: { timestampValue: timestamp },\n            type: { stringValue: deviceType },\n            value: { stringValue: action }\n        }\n    }\n};\n\nconst httpMsg = {\n    payload: {\n        ok: true,\n        command: command,\n        code: irCodes[command],\n        timestamp\n    },\n    statusCode: 200\n};\n\nnode.status({fill:'blue',shape:'dot',text:command});\nreturn [irMsg, httpMsg, logMsg];",
         "outputs": 3,
         "timeout": "",
         "noerr": 0,
@@ -543,16 +627,9 @@
         "x": 360,
         "y": 980,
         "wires": [
-            [
-                "88aed780adba5460"
-            ],
-            [
-                "25c7cf539fa80c08"
-            ],
-            [
-                "2d39c08273e09b97",
-                "f8a9c1d2e3b4a5c6"
-            ]
+            ["88aed780adba5460"],
+            ["25c7cf539fa80c08"],
+            ["2d39c08273e09b97"]
         ]
     },
     {
@@ -629,72 +706,5 @@
         "servername": "",
         "verifyservercert": true,
         "alpnprotocol": ""
-    },
-    {
-        "id": "f8a9c1d2e3b4a5c6",
-        "type": "function",
-        "z": "8236f17f75ff22ef",
-        "name": "Format for Firestore REST",
-        "func": "// Format log entry for Firestore REST API\nconst entry = {\n    fields: {\n        timestamp: { timestampValue: msg.payload?.fields?.timestamp?.timestampValue || new Date().toISOString() },\n        device: { stringValue: msg.payload?.fields?.device?.stringValue || 'unknown' },\n        action: { stringValue: msg.payload?.fields?.action?.stringValue || 'unknown' },\n        source: { stringValue: msg.payload?.fields?.source?.stringValue || 'unknown' }\n    }\n};\n\nmsg.payload = entry;\nmsg.headers = {\n    'Content-Type': 'application/json'\n};\n\nnode.status({fill:'blue',shape:'dot',text:'Formatted for REST'});\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 600,
-        "y": 800,
-        "wires": [
-            [
-                "a1b2c3d4e5f6a7b8"
-            ]
-        ]
-    },
-    {
-        "id": "a1b2c3d4e5f6a7b8",
-        "type": "http request",
-        "z": "8236f17f75ff22ef",
-        "name": "POST to Firestore",
-        "method": "POST",
-        "ret": "txt",
-        "paytoqs": "ignore",
-        "url": "https://firestore.googleapis.com/v1/projects/dnje-40900/databases/(default)/documents/history",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [
-            {
-                "keyType": "other",
-                "keyValue": "Authorization",
-                "valueType": "other",
-                "valueValue": "Bearer YsTcLQwYUZRPZppWwbt6SXwbNAQY17wh4BYUQCBq"
-            }
-        ],
-        "x": 830,
-        "y": 800,
-        "wires": [
-            [
-                "b2c3d4e5f6a7b8c9"
-            ]
-        ]
-    },
-    {
-        "id": "b2c3d4e5f6a7b8c9",
-        "type": "debug",
-        "z": "8236f17f75ff22ef",
-        "name": "Firestore REST Response",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1050,
-        "y": 800,
-        "wires": []
     }
 ]
