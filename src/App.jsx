@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { getSensors, getDevices, controlDevice, getHistory, sendIrCode } from './services/api'
 import Navigation from './components/Navigation'
 import Loading from './components/Loading'
+import VoiceControl from './components/VoiceControl'
 import Overview from './pages/Overview'
 import Controls from './pages/Controls'
 import History from './pages/History'
@@ -12,6 +13,8 @@ export default function App(){
   const [devices, setDevices] = useState({})
   const [history, setHistory] = useState([])
   const [luxSamples, setLuxSamples] = useState([])
+  const [tempSamples, setTempSamples] = useState([])
+  const [humSamples, setHumSamples] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
   async function fetchAll(){
@@ -22,7 +25,9 @@ export default function App(){
       setSensors(s)
       setDevices(d)
       setHistory(h)
-      setLuxSamples(prev => [...prev.slice(-30), { time: new Date().toLocaleTimeString(), lux: s.luminosity || 0 }])
+      setLuxSamples(prev => [...prev.slice(-30), { time: new Date().toLocaleTimeString(), lux: s.luminosity ?? 0 }])
+      setTempSamples(prev => [...prev.slice(-30), { time: new Date().toLocaleTimeString(), value: s.temperature ?? 0 }])
+      setHumSamples(prev => [...prev.slice(-30), { time: new Date().toLocaleTimeString(), value: s.humidity ?? 0 }])
       setIsLoading(false)
     }catch(e){
       console.error(e)
@@ -50,6 +55,10 @@ export default function App(){
     await sendIrCode(irCmd)
     await fetchAll()
   }
+  async function setAutoMode(next){
+    await controlDevice('auto_mode', next)
+    await fetchAll()
+  }
 
   return (
     <Router>
@@ -57,11 +66,12 @@ export default function App(){
         <Navigation />
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Overview sensors={sensors} luxSamples={luxSamples} />} />
-            <Route path="/controls" element={<Controls devices={devices} toggleLedIr={toggleLedIr} setServo={setServo} setServoIr={setServoIr} />} />
+            <Route path="/" element={<Overview sensors={sensors} luxSamples={luxSamples} tempSamples={tempSamples} humSamples={humSamples} />} />
+            <Route path="/controls" element={<Controls devices={devices} toggleLedIr={toggleLedIr} setServo={setServo} setServoIr={setServoIr} setAutoMode={setAutoMode} />} />
             <Route path="/history" element={<History history={history} />} />
           </Routes>
         </main>
+        <VoiceControl onCommand={() => fetchAll()} />
       </div>
     </Router>
   )

@@ -1,0 +1,117 @@
+/* Voice Control Widget Styles */
+.voice-control-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.voice-badge {
+  background: white;
+  border-radius: 60px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  border: 2px solid #e0e0e0;
+}
+
+.voice-badge.listening {
+  border-color: #7c3aed;
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%);
+}
+
+.voice-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.voice-button:hover {
+  background: rgba(124, 58, 237, 0.1);
+  transform: scale(1.1);
+}
+
+.voice-badge.listening .voice-button {
+  animation: pulse-mic 1s infinite;
+}
+
+@keyframes pulse-mic {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.voice-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.status-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+.interim-text {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.final-text {
+  font-size: 11px;
+  color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .voice-control-widget {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .voice-badge {
+    padding: 10px 12px;
+  }
+
+  .voice-status {
+    min-width: 150px;
+    max-width: 180px;
+  }
+
+  .status-text {
+    font-size: 12px;
+  }
+
+  .interim-text {
+    font-size: 11px;
+  }
+
+  .final-text {
+    font-size: 10px;
+  }
+}

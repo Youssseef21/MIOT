@@ -2,8 +2,11 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: 'http://localhost:1880',
-  timeout: 8000,
-  headers: { 'Content-Type': 'application/json' }
+  timeout: 15000,
+  headers: { 
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'
+  }
 })
 
 export async function getSensors(){
@@ -28,6 +31,11 @@ export async function getHistory(){
 
 export async function sendIrCode(command){
   const res = await api.post('/api/ir', { command })
+  return res.data
+}
+
+export async function sendVoiceCommand(text){
+  const res = await api.post('/api/voice', { text })
   return res.data
 }
 

@@ -30,7 +30,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Temp History",
-        "func": "const value = parseFloat(msg.payload);\nif (isNaN(value)) return null;\nconst projectId = \"miot-2a535\";\nconst apiKey = \"AIzaSyAthtPTwsME_GWtuXELBUos_9Tnws-d5to\";\nconst collection = \"dht22_temperature\";\n\nmsg.payload = {\n    fields: {\n        type: { stringValue: \"temperature\" },\n        value: { doubleValue: value },\n        unit: { stringValue: \"°C\" },\n        timestamp: { timestampValue: new Date().toISOString() }\n    }\n};\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
+        "func": "const value = parseFloat(msg.payload);\nif (isNaN(value)) return null;\nconst projectId = \"miot-ae0e0\";\nconst apiKey = \"AIzaSyAmPPa7kG3xX1qYYjYLUNEmkD_m2Io0oMM\";\nconst collection = \"dht22_temperature\";\n\nmsg.payload = {\n    fields: {\n        type: { stringValue: \"temperature\" },\n        value: { doubleValue: value },\n        unit: { stringValue: \"°C\" },\n        timestamp: { timestampValue: new Date().toISOString() }\n    }\n};\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -101,7 +101,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Hum History",
-        "func": "const value = parseFloat(msg.payload);\nif (isNaN(value)) return null;\nconst projectId = \"miot-2a535\";\nconst apiKey = \"AIzaSyAthtPTwsME_GWtuXELBUos_9Tnws-d5to\";\nconst collection = \"dht22_humidity\";\n\nmsg.payload = {\n    fields: {\n        type: { stringValue: \"humidity\" },\n        value: { doubleValue: value },\n        unit: { stringValue: \"%\" },\n        timestamp: { timestampValue: new Date().toISOString() }\n    }\n};\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
+        "func": "const value = parseFloat(msg.payload);\nif (isNaN(value)) return null;\nconst projectId = \"miot-ae0e0\";\nconst apiKey = \"AIzaSyAmPPa7kG3xX1qYYjYLUNEmkD_m2Io0oMM\";\nconst collection = \"dht22_humidity\";\n\nmsg.payload = {\n    fields: {\n        type: { stringValue: \"humidity\" },\n        value: { doubleValue: value },\n        unit: { stringValue: \"%\" },\n        timestamp: { timestampValue: new Date().toISOString() }\n    }\n};\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -285,6 +285,40 @@
         "wires": [[]]
     },
     {
+        "id": "e9b6a5b8f3c842cc",
+        "type": "mqtt in",
+        "z": "8236f17f75ff22ef",
+        "name": "Auto Mode State",
+        "topic": "push/auto_mode",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "dd79c52dfd597005",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 110,
+        "y": 420,
+        "wires": [
+            ["1f3a4c7e2a6fbe45"]
+        ]
+    },
+    {
+        "id": "1f3a4c7e2a6fbe45",
+        "type": "function",
+        "z": "8236f17f75ff22ef",
+        "name": "Cache Auto Mode",
+        "func": "const state = String(msg.payload).toUpperCase();\nglobal.set('auto_mode', state);\nnode.status({fill: state==='ON' ? 'green' : 'grey', shape:'dot', text: state});\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 420,
+        "wires": [[]]
+    },
+    {
         "id": "ac913f9f45c6df54",
         "type": "http in",
         "z": "8236f17f75ff22ef",
@@ -347,7 +381,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Build Devices Response",
-        "func": "const led1 = global.get('led1') || 'OFF';\nconst led2 = global.get('led2') || 'OFF';\nconst servo = global.get('servo') || 90;\n\nmsg.payload = {\n    led1,\n    led2,\n    servo\n};\n\nmsg.headers = {\n    'Content-Type': 'application/json',\n    'Access-Control-Allow-Origin': '*'\n};\n\nreturn msg;",
+        "func": "const led1 = global.get('led1') || 'OFF';\nconst led2 = global.get('led2') || 'OFF';\nconst servo = global.get('servo') || 90;\nconst autoMode = global.get('auto_mode') || 'OFF';\n\nmsg.payload = {\n    led1,\n    led2,\n    servo,\n    auto_mode: autoMode\n};\n\nmsg.headers = {\n    'Content-Type': 'application/json',\n    'Access-Control-Allow-Origin': '*'\n};\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -390,7 +424,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Validate & Route",
-        "func": "const body = msg.payload || {};\n\nif(!body.device || typeof body.action === 'undefined'){\n    msg.statusCode = 400;\n    msg.payload = { error: 'Missing device or action' };\n    msg.headers = {'Access-Control-Allow-Origin': '*'};\n    return [null, msg, null];\n}\n\nconst device = body.device;\nconst action = body.action;\nlet topic = '';\nlet mqttPayload = null;\n\nif(device === 'led1') {\n    topic = 'push/led1';\n    mqttPayload = String(action);\n} else if(device === 'led2') {\n    topic = 'push/led2';\n    mqttPayload = String(action);\n} else if(device === 'servo') {\n    topic = 'miot/ir/servo';\n    mqttPayload = Number(action);\n} else {\n    msg.statusCode = 400;\n    msg.payload = { error: 'Unknown device: ' + device };\n    msg.headers = {'Access-Control-Allow-Origin': '*'};\n    return [null, msg, null];\n}\n\nconst timestamp = (new Date()).toISOString();\n\n// Prepare MQTT message\nconst mqttMsg = {\n    topic: topic,\n    payload: mqttPayload\n};\n\n// Prepare HTTP response\nconst httpMsg = {\n    payload: {\n        ok: true,\n        device: device,\n        action: action,\n        timestamp: timestamp\n    },\n    headers: {'Access-Control-Allow-Origin': '*'},\n    statusCode: 200\n};\n\n// Only log servo to Firestore (LEDs toggle only via IR)\nlet logMsg = null;\nif(device === 'servo') {\n    logMsg = {\n        payload: {\n            fields: {\n                timestamp: { timestampValue: timestamp },\n                type: { stringValue: 'Servo' },\n                value: { stringValue: String(action) }\n            }\n        }\n    };\n}\n\nnode.status({fill:'green',shape:'dot',text:`${device}:${action}`});\n\nreturn [mqttMsg, httpMsg, logMsg];",
+        "func": "const body = msg.payload || {};\n\nif(!body.device || typeof body.action === 'undefined'){\n    msg.statusCode = 400;\n    msg.payload = { error: 'Missing device or action' };\n    msg.headers = {'Access-Control-Allow-Origin': '*'};\n    return [null, msg, null];\n}\n\nconst device = body.device;\nconst action = body.action;\nlet topic = '';\nlet mqttPayload = null;\n\nif(device === 'led1') {\n    topic = 'push/led1';\n    mqttPayload = String(action);\n} else if(device === 'led2') {\n    topic = 'push/led2';\n    mqttPayload = String(action);\n} else if(device === 'servo') {\n    topic = 'miot/ir/servo';\n    mqttPayload = Number(action);\n} else if(device === 'auto_mode') {\n    topic = 'push/auto_mode';\n    mqttPayload = String(action).toUpperCase();\n} else {\n    msg.statusCode = 400;\n    msg.payload = { error: 'Unknown device: ' + device };\n    msg.headers = {'Access-Control-Allow-Origin': '*'};\n    return [null, msg, null];\n}\n\nconst timestamp = (new Date()).toISOString();\n\n// Prepare MQTT message\nconst mqttMsg = {\n    topic: topic,\n    payload: mqttPayload\n};\n\n// Prepare HTTP response\nconst httpMsg = {\n    payload: {\n        ok: true,\n        device: device,\n        action: action,\n        timestamp: timestamp\n    },\n    headers: {'Access-Control-Allow-Origin': '*'},\n    statusCode: 200\n};\n\n// Only log servo to Firestore (LEDs toggle only via IR)\nlet logMsg = null;\nif(device === 'servo') {\n    const prevState = global.get('servo');\n    logMsg = {\n        payload: {\n            fields: {\n                timestamp: { timestampValue: timestamp },\n                type: { stringValue: 'Servo' },\n                value: { stringValue: String(action) },\n                prevState: { stringValue: (prevState === undefined || prevState === null) ? '' : String(prevState) }\n            }\n        }\n    };\n}\n\nnode.status({fill:'green',shape:'dot',text:`${device}:${action}`});\n\nreturn [mqttMsg, httpMsg, logMsg];",
         "outputs": 3,
         "timeout": "",
         "noerr": 0,
@@ -400,7 +434,7 @@
         "x": 350,
         "y": 660,
         "wires": [
-            [],
+            ["88aed780adba5460"],
             ["abaf1460cf5d826e"],
             ["2d39c08273e09b97"]
         ]
@@ -421,7 +455,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Control History",
-        "func": "// Only process if logMsg has fields (servo from /api/control or LED/Servo from /api/ir)\nif (!msg.payload?.fields) return null;\n\nconst projectId = \"miot-2a535\";\nconst apiKey = \"AIzaSyAthtPTwsME_GWtuXELBUos_9Tnws-d5to\";\nconst collection = \"dht22_states\";\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
+        "func": "// Only process if logMsg has fields (servo from /api/control or LED/Servo from /api/ir)\nif (!msg.payload?.fields) return null;\n\nconst projectId = \"miot-ae0e0\";\nconst apiKey = \"AIzaSyAmPPa7kG3xX1qYYjYLUNEmkD_m2Io0oMM\";\nconst collection = \"dht22_states\";\n\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -492,7 +526,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Query States",
-        "func": "const projectId = \"miot-2a535\";\nconst apiKey = \"AIzaSyAthtPTwsME_GWtuXELBUos_9Tnws-d5to\";\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\nmsg.payload = { structuredQuery: { from: [{ collectionId: \"dht22_states\" }], orderBy: [{ field: { fieldPath: \"timestamp\" }, direction: \"DESCENDING\" }], limit: 20 } };\n\nreturn msg;",
+        "func": "const projectId = \"miot-ae0e0\";\nconst apiKey = \"AIzaSyAmPPa7kG3xX1qYYjYLUNEmkD_m2Io0oMM\";\nmsg.url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery?key=${apiKey}`;\nmsg.method = \"POST\";\nmsg.headers = { \"Content-Type\": \"application/json\" };\nmsg.payload = { structuredQuery: { from: [{ collectionId: \"dht22_states\" }], orderBy: [{ field: { fieldPath: \"timestamp\" }, direction: \"DESCENDING\" }], limit: 20 } };\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -531,7 +565,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Format History Response",
-        "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nconst docs = rows.filter(r => r.document).map(r => r.document);\nconst data = docs.map(doc => ({\n    type: doc.fields?.type?.stringValue,\n    value: doc.fields?.value?.stringValue || doc.fields?.value?.doubleValue || doc.fields?.value?.integerValue,\n    timestamp: doc.fields?.timestamp?.timestampValue\n}));\n\nmsg.payload = data;\nmsg.headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };\nmsg.statusCode = 200;\n\nnode.status({fill:'green',shape:'dot',text:data.length + ' records'});\nreturn msg;",
+        "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nconst docs = rows.filter(r => r.document).map(r => r.document);\nconst data = docs.map(doc => ({\n    type: doc.fields?.type?.stringValue,\n    value: doc.fields?.value?.stringValue || doc.fields?.value?.doubleValue || doc.fields?.value?.integerValue,\n    prevState: doc.fields?.prevState?.stringValue || doc.fields?.prevState?.doubleValue || doc.fields?.prevState?.integerValue,\n    timestamp: doc.fields?.timestamp?.timestampValue\n}));\n\nmsg.payload = data;\nmsg.headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };\nmsg.statusCode = 200;\n\nnode.status({fill:'green',shape:'dot',text:data.length + ' records'});\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -617,7 +651,7 @@
         "type": "function",
         "z": "8236f17f75ff22ef",
         "name": "Map IR Codes",
-        "func": "const body = msg.payload || {};\nconst command = body.command || '';\n\nconst irCodes = {\n    'led1_toggle': '0x00FF30CF',\n    'led2_toggle': '0x00FF18E7',\n    'servo_180': '0x00FF02FD',\n    'servo_0': '0x00FF22DD'\n};\n\nif (!irCodes[command]) {\n    msg.statusCode = 400;\n    msg.payload = { error: 'Unknown IR command', available: Object.keys(irCodes) };\n    return [null, msg, null];\n}\n\nconst irMsg = {\n    topic: 'miot/ir/code',\n    payload: irCodes[command]\n};\n\nconst timestamp = (new Date()).toISOString();\n\n// Map IR commands to device types for Firestore logging\nlet deviceType = '';\nlet action = '';\nif (command === 'led1_toggle') { deviceType = 'LED1'; action = 'toggle'; }\nelse if (command === 'led2_toggle') { deviceType = 'LED2'; action = 'toggle'; }\nelse if (command === 'servo_180') { deviceType = 'Servo'; action = '180'; }\nelse if (command === 'servo_0') { deviceType = 'Servo'; action = '0'; }\n\nconst logMsg = {\n    payload: {\n        fields: {\n            timestamp: { timestampValue: timestamp },\n            type: { stringValue: deviceType },\n            value: { stringValue: action }\n        }\n    }\n};\n\nconst httpMsg = {\n    payload: {\n        ok: true,\n        command: command,\n        code: irCodes[command],\n        timestamp\n    },\n    statusCode: 200\n};\n\nnode.status({fill:'blue',shape:'dot',text:command});\nreturn [irMsg, httpMsg, logMsg];",
+        "func": "const body = msg.payload || {};\nconst command = body.command || '';\n\nconst irCodes = {\n    'led1_toggle': '0x00FF30CF',\n    'led2_toggle': '0x00FF18E7',\n    'servo_180': '0x00FF02FD',\n    'servo_0': '0x00FF22DD'\n};\n\n// Capture current known states before sending IR so we can log the previous value\nconst currentStates = {\n    led1: (global.get('led1') || 'UNKNOWN'),\n    led2: (global.get('led2') || 'UNKNOWN'),\n    servo: global.get('servo')\n};\n\nif (!irCodes[command]) {\n    msg.statusCode = 400;\n    msg.payload = { error: 'Unknown IR command', available: Object.keys(irCodes) };\n    return [null, msg, null];\n}\n\nconst irMsg = {\n    topic: 'miot/ir/code',\n    payload: irCodes[command]\n};\n\nconst timestamp = (new Date()).toISOString();\n\n// Map IR commands to device types for Firestore logging\nlet deviceType = '';\nlet action = '';\nlet prevState = '';\nif (command === 'led1_toggle') { deviceType = 'LED1'; action = 'toggle'; prevState = currentStates.led1; }\nelse if (command === 'led2_toggle') { deviceType = 'LED2'; action = 'toggle'; prevState = currentStates.led2; }\nelse if (command === 'servo_180') { deviceType = 'Servo'; action = '180'; prevState = currentStates.servo; }\nelse if (command === 'servo_0') { deviceType = 'Servo'; action = '0'; prevState = currentStates.servo; }\n\nconst logMsg = {\n    payload: {\n        fields: {\n            timestamp: { timestampValue: timestamp },\n            type: { stringValue: deviceType },\n            value: { stringValue: action },\n            prevState: { stringValue: (prevState === undefined || prevState === null) ? '' : String(prevState) }\n        }\n    }\n};\n\nconst httpMsg = {\n    payload: {\n        ok: true,\n        command: command,\n        code: irCodes[command],\n        timestamp\n    },\n    statusCode: 200\n};\n\nnode.status({fill:'blue',shape:'dot',text:command});\nreturn [irMsg, httpMsg, logMsg];",
         "outputs": 3,
         "timeout": "",
         "noerr": 0,
@@ -636,7 +670,7 @@
         "id": "88aed780adba5460",
         "type": "mqtt out",
         "z": "8236f17f75ff22ef",
-        "name": "Publish IR Code",
+        "name": "Publish Control MQTT",
         "topic": "",
         "qos": "2",
         "retain": "false",
@@ -647,7 +681,7 @@
         "expiry": "",
         "broker": "dd79c52dfd597005",
         "x": 580,
-        "y": 940,
+        "y": 660,
         "wires": []
     },
     {
@@ -706,5 +740,146 @@
         "servername": "",
         "verifyservercert": true,
         "alpnprotocol": ""
+    },
+    {
+        "id": "voice_cors_preflight",
+        "type": "http in",
+        "z": "8236f17f75ff22ef",
+        "name": "",
+        "url": "/api/voice",
+        "method": "options",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 140,
+        "y": 1050,
+        "wires": [
+            ["voice_cors_response"]
+        ]
+    },
+    {
+        "id": "voice_cors_response",
+        "type": "function",
+        "z": "8236f17f75ff22ef",
+        "name": "Voice CORS Preflight",
+        "func": "msg.statusCode = 200;\nmsg.headers = {\n    'Access-Control-Allow-Origin': '*',\n    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',\n    'Access-Control-Allow-Headers': 'Content-Type'\n};\nmsg.payload = '';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 1050,
+        "wires": [
+            ["voice_cors_http_response"]
+        ]
+    },
+    {
+        "id": "voice_cors_http_response",
+        "type": "http response",
+        "z": "8236f17f75ff22ef",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 580,
+        "y": 1050,
+        "wires": []
+    },
+    {
+        "id": "voice_http_in",
+        "type": "http in",
+        "z": "8236f17f75ff22ef",
+        "name": "",
+        "url": "/api/voice",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 130,
+        "y": 1100,
+        "wires": [
+            ["voice_json"]
+        ]
+    },
+    {
+        "id": "voice_json",
+        "type": "json",
+        "z": "8236f17f75ff22ef",
+        "name": "Parse JSON",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 300,
+        "y": 1100,
+        "wires": [
+            ["parse_grok"]
+        ]
+    },
+    {
+        "id": "parse_grok",
+        "type": "function",
+        "z": "8236f17f75ff22ef",
+        "name": "Parse Intent (Local)",
+        "func": "let body = msg.payload;\n\n// Some deployments auto-parse JSON in HTTP In; others leave it a string. Normalize.\nif (typeof body === 'string') {\n    try {\n        body = JSON.parse(body);\n    } catch (e) {\n        body = { text: body };\n    }\n}\n\nconst text = (body?.text || '').toLowerCase();\n\nconst makeError = (statusCode, payload) => [null, { statusCode, headers: { 'Access-Control-Allow-Origin': '*' }, payload }];\n\nif (!text) {\n    return makeError(400, { error: 'No text provided' });\n}\n\nlet device = null;\nlet action = null;\n\nconst has = (w) => text.includes(w);\n\n// Auto mode\nif (has('auto')) {\n    device = 'auto_mode';\n    if (has('off') || has('disable') || has('stop')) action = 'off';\n    else if (has('on') || has('enable') || has('start')) action = 'on';\n    else action = 'on';\n}\n\n// Lights\nif (!device && (has('light') || has('led'))) {\n    if (has('1') || has('one') || has('first')) device = 'led1';\n    else if (has('2') || has('two') || has('second')) device = 'led2';\n    else device = 'led1';\n    if (has('off')) action = 'off';\n    else if (has('on')) action = 'on';\n    else action = 'toggle';\n}\n\n// Servo / blinds\nif (!device && (has('servo') || has('blind') || has('curtain') || has('door'))) {\n    device = 'servo';\n    if (has('close') || has('down') || has('zero') || has('0')) action = '0';\n    else if (has('open') || has('up') || has('one eighty') || has('180')) action = '180';\n    else action = '180';\n}\n\nif (!device || !action) {\n    return makeError(400, { error: 'Could not understand command', text });\n}\n\nconst commands = {\n    'led1_on': 'led1_toggle',\n    'led1_off': 'led1_toggle',\n    'led1_toggle': 'led1_toggle',\n    'led2_on': 'led2_toggle',\n    'led2_off': 'led2_toggle',\n    'led2_toggle': 'led2_toggle',\n    'servo_180': 'servo_180',\n    'servo_0': 'servo_0',\n    'servo_close': 'servo_0',\n    'servo_open': 'servo_180',\n    'auto_mode_on': 'auto_mode_on',\n    'auto_mode_off': 'auto_mode_off'\n};\n\nconst key = `${device}_${action}`.toLowerCase();\nconst command = commands[key];\n\nif (!command) {\n    return makeError(400, { error: 'Unknown device/action combination', intent: { device, action }, text });\n}\n\nmsg.intent = { device, action };\nmsg.command = command;\nmsg.statusCode = 200;\nreturn [msg, null];",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 1100,
+        "wires": [
+            ["send_voice_command"],
+            ["voice_http_response"]
+        ]
+    },
+    {
+        "id": "send_voice_command",
+        "type": "function",
+        "z": "8236f17f75ff22ef",
+        "name": "Send Voice Command",
+        "func": "const command = msg.command;\nconst intent = msg.intent;\n\n// Map to IR codes or MQTT commands\nconst irCodes = {\n    'led1_toggle': '0x00FF30CF',\n    'led2_toggle': '0x00FF18E7',\n    'servo_180': '0x00FF02FD',\n    'servo_0': '0x00FF22DD'\n};\n\nlet mqttMsg = null;\nlet httpResponse = { ok: true, command, intent };\n\nif (irCodes[command]) {\n    // Send IR command\n    mqttMsg = {\n        topic: 'miot/ir/code',\n        payload: irCodes[command]\n    };\n    httpResponse.type = 'ir';\n} else if (command.startsWith('auto_mode_')) {\n    // Send MQTT auto_mode command\n    const action = command === 'auto_mode_on' ? 'ON' : 'OFF';\n    mqttMsg = {\n        topic: 'push/auto_mode',\n        payload: action\n    };\n    httpResponse.type = 'auto_mode';\n}\n\nreturn [mqttMsg, { payload: httpResponse, statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*' } }];",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 1100,
+        "wires": [
+            ["voice_mqtt_out"],
+            ["voice_http_response"]
+        ]
+    },
+    {
+        "id": "voice_mqtt_out",
+        "type": "mqtt out",
+        "z": "8236f17f75ff22ef",
+        "name": "Publish Voice IR",
+        "topic": "",
+        "qos": "2",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "dd79c52dfd597005",
+        "x": 1300,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "voice_http_response",
+        "type": "http response",
+        "z": "8236f17f75ff22ef",
+        "name": "",
+        "statusCode": "",
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        },
+        "x": 1300,
+        "y": 1140,
+        "wires": []
     }
 ]
